@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Fragment, useState } from "react";
 import propTypes from "prop-types";
 
 function AddForm({ addProduct }) {
@@ -12,7 +12,7 @@ function AddForm({ addProduct }) {
     }
 
     return (
-        <div>
+        <>
      <h1>Add Product</h1>
      <form id="create-form" onSubmit={onSubmit}>
        <div className="input-group">
@@ -50,7 +50,7 @@ function AddForm({ addProduct }) {
 
        <button type="submit">Add product</button>
      </form>
-   </div>
+   </>
     );
 }
 
