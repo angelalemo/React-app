@@ -1,33 +1,33 @@
-## 07 - Rendering
+## 08 - HTTP Request
 
 <div align="center">
-   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93013886-70a6af80-f5d6-11ea-8846-8847faee6fc1.png">
+   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93014019-9e402880-f5d7-11ea-9aca-d71a63aea2a9.png">
 </div>
 
-### AddForm component
+### Prerequisite
 
-1. In the browser, inspect the elements that the `AddForm` component renders
-2. Replace the most outer `div` element with the Fragment
+1. Install the `axios` package:
 
-### App component
-
-1. Replace the most outer `div` element with the Fragment
+   ```bash
+   npm install axios --save
+   ```
 
 ### Home component
 
-1. Replace the most outer `div` element with the Fragment
-2. Use Ternary to conditionally render the `ul` element as following:
+1. Remove the `../app/data` import statement
+2. Set the default of the `products` state to an empty array
+3. Import the `axios` package
+4. Create a `getProducts` function that fetches the products data from this [API](https://apimocha.com/react-redux-class/products), and set the products state to be the products data retrieved from the API:
 
    ```jsx
-   {
-     products.length > 0 ? (
-       <ul className="Home__products">
-         {products.map((product) => (
-           <Product key={product.id} item={product} />
-         ))}
-       </ul>
-     ) : (
-       <div>Loading products....</div>
-     )
+   async function getProducts() {
+     const products = await axios.get(
+       'https://apimocha.com/react-redux-class/products'
+     );
+     setProducts(products.data);
    }
+
+   getProducts();
    ```
+
+   > Notice the problem of calling API infinitely since the the component keeps re-rendering and re-fetching the products data
