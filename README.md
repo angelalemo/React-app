@@ -1,33 +1,23 @@
-## 08 - HTTP Request
+## 09 - React Hooks
 
 <div align="center">
-   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93014019-9e402880-f5d7-11ea-9aca-d71a63aea2a9.png">
+   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93013658-ad71a700-f5d4-11ea-9dcf-ffa388e830b6.png">
 </div>
-
-### Prerequisite
-
-1. Install the `axios` package:
-
-   ```bash
-   npm install axios --save
-   ```
 
 ### Home component
 
-1. Remove the `../app/data` import statement
-2. Set the default of the `products` state to an empty array
-3. Import the `axios` package
-4. Create a `getProducts` function that fetches the products data from this [API](https://apimocha.com/react-redux-class/products), and set the products state to be the products data retrieved from the API:
+1. Import the `useEffect` hook
+2. Move the `getProducts` function and the calling function statement to be inside the `useEffect` hook:
 
    ```jsx
-   async function getProducts() {
-     const products = await axios.get(
-       'https://apimocha.com/react-redux-class/products'
-     );
-     setProducts(products.data);
-   }
+   useEffect(() => {
+     async function getProducts() {
+       const products = await axios.get(
+         'https://apimocha.com/react-redux-class/products'
+       );
+       setProducts(products.data);
+     }
 
-   getProducts();
+     getProducts();
+   }, []); // Put the empty array to make sure that the hook is executed only once
    ```
-
-   > Notice the problem of calling API infinitely since the the component keeps re-rendering and re-fetching the products data
