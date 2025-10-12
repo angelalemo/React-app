@@ -2,7 +2,9 @@ import React, { useState, useEffect, useContext, useReducer } from "react";
 import axios from "axios";
 import Product from "./Product";
 import AddForm from "./Product/AddForm";
-import Context from "../Context";
+// import Context from "../Context";
+import PropTypes from "prop-types";
+import styled from "styled-components";
 
 // function reducer(state, action) {
 //   switch(action.type) {
@@ -18,10 +20,10 @@ import Context from "../Context";
 
 let currentProductId = 9;
 
-function Home (){
+function Home ({className}){
     const [products, setProducts] = useState([]);
     // const [products, dispatch] = useReducer(reducer, []);
-    const theme = useContext(Context);
+    // const theme = useContext(Context);
     
     useEffect(() => {
      async function getProducts() {
@@ -42,9 +44,9 @@ function Home (){
     }
 
     return (
-    <>
+    < div className = {className} >
     
-    <h1 style={{color: theme.maincolor}}>Products list</h1>
+    <h1>Products list</h1>
      {
      products.length > 0 ? (
        <ul className="Home__products">
@@ -57,8 +59,22 @@ function Home (){
      )
     }
     <AddForm addProduct={addProduct} />
-   </>
+   </div>
     );
 }
 
-export default Home;
+Home.propTypes = {
+  className: PropTypes.string.isRequired,
+};
+  
+
+export default styled(Home)`
+  .Home__products {
+        display: flex;
+        flex-wrap: wrap;
+
+        list-style-type: none;
+        padding: 0;
+        margin: 0 -12px;
+  }
+`;
