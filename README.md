@@ -1,124 +1,122 @@
-## 10 - Styled Components
+## 11 - React Router
 
 <div align="center">
-   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93013658-ad71a700-f5d4-11ea-9dcf-ffa388e830b6.png">
+   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93014110-65ed1a00-f5d8-11ea-9fef-01f9cd812673.png">
 </div>
 
 ### Prerequisite
 
-1. Install the `styled-components` package:
+1. Install the `react-router-dom` package:
 
    ```bash
-   npm install styled-components --save
+   npm install react-router-dom --save
    ```
 
-### Moving CSS
+### Setting up the router
 
-1. In the `index.css` file:
-
-   - Move styles that start with `header` to the `Navbar` component as following:
-
-     ```jsx
-     export default styled(Navbar)`
-       height: 48px;
-       width: 100%;
-       display: flex;
-       align-items: center;
-       justify-content: space-between;
-       background-color: #ffffff;
-       border-bottom: 1px solid #dee2e6;
-       box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-
-       padding: 2rem;
-       position: fixed;
-       z-index: 100;
-
-       .brand {
-         font-weight: bold;
-         font-size: 1.5rem;
-       }
-     `;
-     ```
-
-   - Move styles that start with `main` to the `Container` component as following:
-
-     ```jsx
-     export default styled(Container)`
-       max-width: 1200px;
-       margin: 0 auto;
-       padding: 4rem 0;
-     `;
-     ```
-
-   - Move styles that start with `.Home` to the `Home` component as following:
-
-     ```jsx
-     export default styled(Home)`
-       .Home__products {
-         display: flex;
-         flex-wrap: wrap;
-
-         list-style-type: none;
-         padding: 0;
-         margin: 0 -12px;
-       }
-     `;
-     ```
-
-   - Move styles that start with `.Products` to the `Product` component as following:
-
-     ```jsx
-     export default styled(Product)`
-       padding-right: 12px;
-       padding-bottom: 36px;
-       padding-left: 12px;
-       width: 33%;
-       position: relative;
-
-       .Products__name {
-         color: #333;
-
-         text-overflow: ellipsis;
-         overflow: hidden;
-         white-space: nowrap;
-         width: 100%;
-         display: block;
-       }
-
-       .Products__type {
-         color: #767676;
-       }
-
-       .Products__image {
-         width: 100%;
-         height: 200px;
-         object-fit: cover;
-         border-radius: 8px;
-       }
-     `;
-     ```
-
-2. Use the `prop-types` package to verify the added `className` property in all the components
-
-### Global styles
-
-1. Create a new component called `GlobalStyle` in the `features` folder
-
-2. Move the rest of styles in the `index.css` to the `GlobalStyle` component:
+1. In the `index.js` file, import the `BrowserRouter` component and use it to wrap to `App` component:
 
    ```jsx
-   import { createGlobalStyle } from 'styled-components';
-
-   const GlobalStyle = createGlobalStyle`
-       * {
-         box-sizing: border-box;
-       }
-       ...
-     `;
-
-   export default GlobalStyle;
+   <React.StrictMode>
+     <BrowserRouter>
+       <App />
+     </BrowserRouter>
+   </React.StrictMode>
    ```
 
-3. Render the component in the `App` component
+2. In the `App` component, use the `Routes` and `Route` component to setup these two paths:
 
-4. Completely remove the `index.css` file
+   ```jsx
+   <Container>
+     <Routes>
+       <Route path="/create-product" element=<AddForm /> />
+       <Route path="/" element={<Home />} />
+     </Routes>
+   </Container>
+   ```
+
+   > You will not be able to add a new product, we will fix it in the next lesson. Moreover, there will be the `Failed prop type: The prop `addProduct`is marked as required...` in the console. Ignore it for now
+
+3. In the `Home` component, remove the rendering of `AddForm` component, the `addProduct` function, and the `currentProductId` variable
+
+### Using the Link component
+
+1. Update the `Navbar` and `Product` components to use the `Link` component instead of the `a` element
+
+### Creating the UpdateForm component
+
+1. Create a `UpdateForm` component in the `Product` folder
+2. Create `name`, `imageURL`, and `type` states, their initial states should be set to empty string
+3. Render the following code
+
+   ```jsx
+   <>
+     <h1>Update Product</h1>
+     <form id="create-form">
+       <div className="input-group">
+         <label htmlFor="name">Name</label>
+         <input name="name" type="text" id="name" />
+       </div>
+
+       <div className=" input-group">
+         <label htmlFor="imageURL">Image URL</label>
+         <input name="imageURL" type="text" id="imageURL" />
+       </div>
+
+       <div className=" input-group">
+         <label htmlFor="type">Type</label>
+         <input name="type" type="text" id="type" />
+       </div>
+
+       <button type="button" className="UpdateForm__delete-button">
+         Delete restaurant
+       </button>
+       <button type="submit">Update product</button>
+     </form>
+   </>
+   ```
+
+4. Each input field, set a `value` property and bind an `onChange` event
+
+5. Use the `useParams` hook to read the `id` variable from the path:
+
+   ```jsx
+   const { id } = useParams();
+   console.log(id);
+   ```
+
+   > Note that the `console.log` always prints twice. This is because of the `React.StrictMode` component that tries to detect wrong usage of any side effect. It does this by rendering twice. In the production mode, the `React.StrictMode` component doesn't run. Therefore, the rendering twice problem will not occur
+
+6. In the `App` component, add another route for the `/update-product/:id` path:
+
+   ```jsx
+   <Route path="/update-product/:id" element={<UpdateForm />} />
+   ```
+
+### Lifting the state up
+
+> Currently, the fetching API stays inside the `Home` component which means that the `products` data will be available only if users access the main page first. However, we just created a couple of pages that also need to use the `products` data. Therefore, we will need to lift the state up to the `App` component
+
+1. In the `Home` component:
+
+   - Move the `products` state and the `useEffect` hook to the `App` component
+   - Accept a new property called `products`
+   - Move the conditionally rendering of the loading products to the `App` component
+
+2) In the `App` component:
+
+   - Pass the `products` state as a property to the `Home` component
+
+     ```jsx
+     <Container>
+       {products.length > 0 ? (
+         <Routes>
+           <Route path="/create-product" element={<AddForm />} />
+           <Route path="/update-product/:id" element={<UpdateForm />} />
+           <Routes path="/" element={<Home products={products} />} />
+         </Routes>
+       ) : (
+         <div>Loading products....</div>
+       )}
+     </Container>
+     ```

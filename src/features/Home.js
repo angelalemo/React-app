@@ -18,53 +18,25 @@ import styled from "styled-components";
 // }
 
 
-let currentProductId = 9;
+// let currentProductId = 9;
 
-function Home ({className}){
-    const [products, setProducts] = useState([]);
-    // const [products, dispatch] = useReducer(reducer, []);
-    // const theme = useContext(Context);
-    
-    useEffect(() => {
-     async function getProducts() {
-       const products = await axios.get(
-         'https://68e9f9cff1eeb3f856e597f8.mockapi.io/api/products'
-       );
-      setProducts(products.data);
-      // dispatch({type:"SET",payload:products.data});
-     }
-
-     getProducts();
-    }, []);
-
-    function addProduct(product) {
-    const newProduct = { id: ++currentProductId, ...product };
-    setProducts([...products, newProduct]);
-    // dispatch({type:"ADD",payload:newProduct});
-    }
+function Home ({className, products}) {
 
     return (
     < div className = {className} >
-    
     <h1>Products list</h1>
-     {
-     products.length > 0 ? (
        <ul className="Home__products">
          {products.map((product) => (
            <Product key={product.id} item={product} />
          ))}
        </ul>
-     ) : (
-       <div>Loading products....</div>
-     )
-    }
-    <AddForm addProduct={addProduct} />
    </div>
     );
 }
 
 Home.propTypes = {
   className: PropTypes.string.isRequired,
+  products: PropTypes.array.isRequired
 };
   
 
