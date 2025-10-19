@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
+import { Routes, Route } from 'react-router-dom';
 
 import Navbar from './features/Navbar';
 import Container from './features/Container';
 import Home from './features/Home';
-import { Routes, Route } from 'react-router-dom';
 import AddForm from './features/Product/AddForm';
 import UpdateForm from './features/Product/UpdateFrom';
-import axios from 'axios';
-
-// import Context from './Context';
+import { fetchProducts } from './features/Product/actions';
 import GlobalStyle from './features/GlobalStyle';
 
-
 function App() {
-  const [products, setProducts] = useState([]);
+  const products = useSelector((state) => state.products);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     async function getProducts() {
-      const products = await axios.get(
-        'https://68e9f9cff1eeb3f856e597f8.mockapi.io/api/products'
-      );
-      setProducts(products.data);
-    }
+        const response = await axios.get(
+          'https://68e9f9cff1eeb3f856e597f8.mockapi.io/api/products'
+        );
+        dispatch(fetchProducts(response.data));
+      }
+
     getProducts();
   }, []);
 
@@ -37,7 +38,7 @@ function App() {
             <Route path="/" element={<Home products={products} />} />
           </Routes>
         ) : (
-          <div>Loading products....</div>
+          <div>Loading products...</div>
         )}
       </Container>
     </>

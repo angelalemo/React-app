@@ -1,122 +1,211 @@
-## 11 - React Router
+## 12 - Redux
 
 <div align="center">
-   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93014110-65ed1a00-f5d8-11ea-9fef-01f9cd812673.png">
+   <img  alt="Final result" src="https://user-images.githubusercontent.com/4281887/93014226-849fe080-f5d9-11ea-919e-0d32f971b10d.png">
 </div>
+
+### Installing React Developer Tools
+
+1. Access [Redux Developer Tools for Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+2. Install the extension
 
 ### Prerequisite
 
-1. Install the `react-router-dom` package:
+1. Install the `react-redux` and `@reduxjs/toolkit` packages:
 
    ```bash
-   npm install react-router-dom --save
+   npm install react-redux @reduxjs/toolkit --save
    ```
 
-### Setting up the router
+### Setting up Redux
 
-1. In the `index.js` file, import the `BrowserRouter` component and use it to wrap to `App` component:
+1. Create a `store.js` inside the `app` folder:
 
    ```jsx
-   <React.StrictMode>
+   import { configureStore } from '@reduxjs/toolkit';
+
+   export default configureStore({
+     reducer: {}
+   });
+   ```
+
+2. In the `index.js`, setup the Provider component:
+
+   ```jsx
+   <Provider store={store}>
      <BrowserRouter>
        <App />
      </BrowserRouter>
-   </React.StrictMode>
+   </Provider>
    ```
 
-2. In the `App` component, use the `Routes` and `Route` component to setup these two paths:
+> Note that you will get `Store does not have a valid reducer...` error. No worries about it for now, it will be solved in the sections below
+
+### Creating actions
+
+1. In the `Product` folder, create a file called `actions.js` that contains 4 following actions:
 
    ```jsx
-   <Container>
-     <Routes>
-       <Route path="/create-product" element=<AddForm /> />
-       <Route path="/" element={<Home />} />
-     </Routes>
-   </Container>
+   import { createAction } from '@reduxjs/toolkit';
+
+   export const fetchProducts = createAction('FETCH_PRODUCTS');
+   export const addProduct = createAction('ADD_PRODUCT');
+   export const updateProduct = createAction('UPDATE_PRODUCT');
+   export const deleteProduct = createAction('DELETE_PRODUCT');
    ```
 
-   > You will not be able to add a new product, we will fix it in the next lesson. Moreover, there will be the `Failed prop type: The prop `addProduct`is marked as required...` in the console. Ignore it for now
+### Creating the fetchProducts reducer
 
-3. In the `Home` component, remove the rendering of `AddForm` component, the `addProduct` function, and the `currentProductId` variable
-
-### Using the Link component
-
-1. Update the `Navbar` and `Product` components to use the `Link` component instead of the `a` element
-
-### Creating the UpdateForm component
-
-1. Create a `UpdateForm` component in the `Product` folder
-2. Create `name`, `imageURL`, and `type` states, their initial states should be set to empty string
-3. Render the following code
+1. In the `Product` folder, create a file called `reducers.js` containing the following code:
 
    ```jsx
-   <>
-     <h1>Update Product</h1>
-     <form id="create-form">
-       <div className="input-group">
-         <label htmlFor="name">Name</label>
-         <input name="name" type="text" id="name" />
-       </div>
+   import { createReducer } from '@reduxjs/toolkit';
+   import { fetchProducts } from './actions';
 
-       <div className=" input-group">
-         <label htmlFor="imageURL">Image URL</label>
-         <input name="imageURL" type="text" id="imageURL" />
-       </div>
+   let currentProductId = 9;
 
-       <div className=" input-group">
-         <label htmlFor="type">Type</label>
-         <input name="type" type="text" id="type" />
-       </div>
-
-       <button type="button" className="UpdateForm__delete-button">
-         Delete restaurant
-       </button>
-       <button type="submit">Update product</button>
-     </form>
-   </>
+   export default createReducer([], {
+     [fetchProducts]: (state, action) => {
+       return action.payload;
+     }
+   });
    ```
 
-4. Each input field, set a `value` property and bind an `onChange` event
-
-5. Use the `useParams` hook to read the `id` variable from the path:
+2. In the `store.js` file, add the created reducers to the `reducer` object and name it `products`:
 
    ```jsx
-   const { id } = useParams();
-   console.log(id);
+   reducer: {
+     products: productReducers;
+   }
    ```
 
-   > Note that the `console.log` always prints twice. This is because of the `React.StrictMode` component that tries to detect wrong usage of any side effect. It does this by rendering twice. In the production mode, the `React.StrictMode` component doesn't run. Therefore, the rendering twice problem will not occur
+### Using the Redux state and dispatching the getProducts action
 
-6. In the `App` component, add another route for the `/update-product/:id` path:
+1. In the `App` component:
+
+   - Use the Redux state and completely remove the local one:
+
+     ```diff
+     + import { useSelector, useDispatch } from 'react-redux';
+     ...
+     - const [products, setProducts] = useState([]);
+     + const products = useSelector((state) => state.products);
+     ```
+
+   - In the `useEffect` hook, dispatch the `fetchProducts` action:
+
+     ```diff
+     + import { fetchProducts } from './features/Product/actions';
+     ...
+     + const dispatch = useDispatch();
+     useEffect(() => {
+       async function getProducts() {
+         const products = await axios.get(
+           'https://apimocha.com/react-redux-class/products'
+         );
+     -   setProducts(products.data);
+     +   dispatch(fetchProducts(products.data));
+       }
+
+       getProducts();
+     }, []);
+     ```
+
+### Creating a new product
+
+1. In the `reducers.js`, add a new reducer for creating a new product:
 
    ```jsx
-   <Route path="/update-product/:id" element={<UpdateForm />} />
+   [addProduct]: (state, action) => {
+     state.push({ id: ++currentProductId, ...action.payload });
+   }
    ```
 
-### Lifting the state up
+2. In the `AppForm` component:
 
-> Currently, the fetching API stays inside the `Home` component which means that the `products` data will be available only if users access the main page first. However, we just created a couple of pages that also need to use the `products` data. Therefore, we will need to lift the state up to the `App` component
+   - Remove the `addProduct` property
+   - Import the `addProduct` action
+   - Dispatch the `addProduct` action by passing a product object as a payload
+   - Redirect the page to the `/` page
 
-1. In the `Home` component:
+   ```jsx
+   import { useDispatch } from 'react-redux';
+   import { useNavigate } from 'react-router-dom';
+   ...
+   const dispatch = useDispatch();
+   const navigate = useNavigate();
 
-   - Move the `products` state and the `useEffect` hook to the `App` component
-   - Accept a new property called `products`
-   - Move the conditionally rendering of the loading products to the `App` component
+   function onSubmit(event) {
+     event.preventDefault();
+     dispatch(addProduct({ name, type, imageURL }));
+     navigate('/');
+   }
+   ```
 
-2) In the `App` component:
+### Updating a product
 
-   - Pass the `products` state as a property to the `Home` component
+1. In the `reducers.js`, add a new reducer for updating a product:
+
+   ```jsx
+   [updateProduct]: (state, action) => {
+    const productIndex = state.findIndex(
+      (product) => product.id === action.payload.id
+    );
+    state[productIndex] = action.payload;
+   },
+   ```
+
+2. In the `UpdateForm` component:
+
+   - Get the current product from the Redux store by using the `id` parameter:
 
      ```jsx
-     <Container>
-       {products.length > 0 ? (
-         <Routes>
-           <Route path="/create-product" element={<AddForm />} />
-           <Route path="/update-product/:id" element={<UpdateForm />} />
-           <Routes path="/" element={<Home products={products} />} />
-         </Routes>
-       ) : (
-         <div>Loading products....</div>
-       )}
-     </Container>
+     import { useSelector } from 'react-redux';
+     ...
+     const { id } = useParams();
+     const products = useSelector((state) => state.products);
+     const product = products.find((product) => product.id === Number(id));
      ```
+
+   - Set the initial values of the input fields to the `product` object
+
+     ```jsx
+     const [name, setName] = useState(product.name);
+     const [type, setType] = useState(product.type);
+     const [imageURL, setImageURL] = useState(product.imageURL);
+     ```
+
+   - Create an `onSubmit` function and pass it to the `onSubmit` event of the `form` element:
+
+     ```jsx
+     const dispatch = useDispatch();
+     const navigate = useNavigate();
+
+     const onSubmit = (event) => {
+       event.preventDefault();
+       dispatch(updateProduct({ id: product.id, name, type, imageURL }));
+       navigate('/');
+     };
+     ```
+
+### Deleting a product
+
+1. In the `reducers.js`, add a new reducer for deleting a product:
+
+   ```jsx
+   [deleteProduct]: (state, action) => {
+    const productIndex = state.findIndex(
+      (product) => product.id === action.payload.id
+    );
+    state.splice(productIndex, 1);
+   }
+   ```
+
+2. In the `UpdateForm` component, create an `onDelete` function and pass it to the `onClick` event of the delete button element:
+
+   ```jsx
+   const onDelete = () => {
+     dispatch(deleteProduct({ id: product.id }));
+     navigate('/');
+   };
+   ```
